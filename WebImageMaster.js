@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         网页图片大师 — 摸鱼神器 | 显隐切换 | 中心缩放 | 多图钉图 | 阅兵阵列 | 悬停预览 | 统计面板
-// @version      100
+// @version      101
 // @description  优雅方块倒计时；防误触静止触发；滚轮缩放/拖动放大图；放大离开方式选项；钉图模式
 // @author       fxalll
 // @match        *://*/*
@@ -803,30 +803,42 @@ img:not(.nopic-clone), svg:not(.nopic-clone), .nopic-has-bg:not(.nopic-clone) {
 
     const imageData = [];
 
-    // 直接从 DOM 收集，不依赖 imageControls
     const allImages = document.querySelectorAll(
-      'img:not(.nopic-clone):not(.nopic-parade-clone), svg:not(.nopic-clone):not(.nopic-parade-clone), [style*="background-image"]:not(.nopic-clone):not(.nopic-parade-clone)'
-    );
-    allImages.forEach(el => {
-      if (!el.isConnected) return;
-      if (el.id === 'nopic-about-img' || el.closest('#nopic-about-modal')) return;
-      const rect = el.getBoundingClientRect();
-      if (rect.width > 0 && rect.height > 0) {
-        if (paradeFilter.enabled) {
-          const naturalW = Math.round(rect.width) || el.offsetWidth;
-          const naturalH = Math.round(rect.height) || el.offsetHeight;
-          if (
-            naturalW < paradeFilter.minW ||
-            naturalW > paradeFilter.maxW ||
-            naturalH < paradeFilter.minH ||
-            naturalH > paradeFilter.maxH
-          )
-            return;
-        }
-        const wasHidden = el.dataset.isHidden === 'true';
-        imageData.push({ el, wasHidden });
-      }
-    });
+  'img:not(.nopic-clone):not(.nopic-parade-clone), svg:not(.nopic-clone):not(.nopic-parade-clone), .nopic-has-bg:not(.nopic-clone):not(.nopic-parade-clone), [style*="background-image"]:not(.nopic-clone):not(.nopic-parade-clone)'
+);
+allImages.forEach(el => {
+  if (!el.isConnected) return;
+  if (el.id === 'nopic-about-img' || el.closest('#nopic-about-modal')) return;
+  
+  // 添加和 imgHiden() 一致的过滤逻辑
+  const bg = window.getComputedStyle(el).backgroundImage;
+  const isTarget =
+    el.tagName === 'IMG' ||
+    el.tagName === 'SVG' ||
+    (bg && bg !== 'none' && bg.includes('url'));
+  if (!isTarget) return;
+  
+  const rect = el.getBoundingClientRect();
+  const hasText =
+    (el.tagName === 'DIV' || el.tagName === 'SPAN') && el.innerText.trim().length > 0;
+  
+  // 使用 imgHiden() 一致的过滤条件：width > 15 && height > 15 && !hasText
+  if (rect.width > 15 && rect.height > 15 && !hasText) {
+    if (paradeFilter.enabled) {
+      const naturalW = Math.round(rect.width) || el.offsetWidth;
+      const naturalH = Math.round(rect.height) || el.offsetHeight;
+      if (
+        naturalW < paradeFilter.minW ||
+        naturalW > paradeFilter.maxW ||
+        naturalH < paradeFilter.minH ||
+        naturalH > paradeFilter.maxH
+      )
+        return;
+    }
+    const wasHidden = el.dataset.isHidden === 'true';
+    imageData.push({ el, wasHidden });
+  }
+});
     if (imageData.length === 0) return;
 
     isParadeMode = true;
