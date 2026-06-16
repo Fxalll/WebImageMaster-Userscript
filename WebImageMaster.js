@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         网页图片大师 — 摸鱼神器 | 显隐切换 | 中心缩放 | 多图钉图 | 阅兵阵列 | 悬停预览 | 统计面板
-// @version      101
+// @version      102
 // @description  优雅方块倒计时；防误触静止触发；滚轮缩放/拖动放大图；放大离开方式选项；钉图模式
 // @author       fxalll
 // @match        *://*/*
@@ -11,13 +11,11 @@
 // @license      MIT
 // @namespace    https://greasyfork.org/users/1043548
 // @icon         data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIzIiB5PSIzIiB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHJ4PSIyIiByeT0iMiI+PC9yZWN0PjxjaXJjbGUgY3g9IjguNSIgY3k9IjguNSIgcj0iMS41Ij48L2NpcmNsZT48cG9seWdvbiBwb2ludHM9IjIxIDE1IDE2IDEwIDUgMjEiPjwvcG9seWdvbj48L3N2Zz4=
-// @downloadURL https://update.greasyfork.org/scripts/496216/%E7%BD%91%E9%A1%B5%E5%9B%BE%E7%89%87%E5%A4%A7%E5%B8%88%20%E2%80%94%20%E6%91%B8%E9%B1%BC%E7%A5%9E%E5%99%A8%20%7C%20%E6%98%BE%E9%9A%90%E5%88%87%E6%8D%A2%20%7C%20%E4%B8%AD%E5%BF%83%E7%BC%A9%E6%94%BE%20%7C%20%E5%A4%9A%E5%9B%BE%E9%92%89%E5%9B%BE%20%7C%20%E9%98%85%E5%85%B5%E9%98%B5%E5%88%97%20%7C%20%E6%82%AC%E5%81%9C%E9%A2%84%E8%A7%88%20%7C%20%E7%BB%9F%E8%AE%A1%E9%9D%A2%E6%9D%BF.user.js
-// @updateURL https://update.greasyfork.org/scripts/496216/%E7%BD%91%E9%A1%B5%E5%9B%BE%E7%89%87%E5%A4%A7%E5%B8%88%20%E2%80%94%20%E6%91%B8%E9%B1%BC%E7%A5%9E%E5%99%A8%20%7C%20%E6%98%BE%E9%9A%90%E5%88%87%E6%8D%A2%20%7C%20%E4%B8%AD%E5%BF%83%E7%BC%A9%E6%94%BE%20%7C%20%E5%A4%9A%E5%9B%BE%E9%92%89%E5%9B%BE%20%7C%20%E9%98%85%E5%85%B5%E9%98%B5%E5%88%97%20%7C%20%E6%82%AC%E5%81%9C%E9%A2%84%E8%A7%88%20%7C%20%E7%BB%9F%E8%AE%A1%E9%9D%A2%E6%9D%BF.meta.js
 // ==/UserScript==
-
+ 
 (function () {
   'use strict';
-
+ 
   // --- 1. 配置管理 ---
   const defaultConfig = {
     showOutline: true,
@@ -43,9 +41,9 @@
     displayReadChars: false,
     displayAdCount: false,
     statsRange: 'session',
-    disableAnimation: false,
+    disableAnimation: false
   };
-
+ 
   // 记录被永久隐藏的网站列表
   function getPermaHiddenSites() {
     const saved = localStorage.getItem('nopic_perma_hidden_sites');
@@ -54,7 +52,7 @@
   function setPermaHiddenSites(list) {
     localStorage.setItem('nopic_perma_hidden_sites', JSON.stringify(list));
   }
-
+ 
   // 阅兵模式过滤配置（按网页独立记忆）
   function getParadeFilterConfig() {
     const key = 'nopic_parade_filter_' + location.host;
@@ -66,7 +64,7 @@
     localStorage.setItem('nopic_parade_filter_' + location.host, JSON.stringify(cfg));
   }
   let paradeFilter = getParadeFilterConfig();
-
+ 
   function getLocalConfig(key) {
     const val = localStorage.getItem('nopic_local_' + key);
     return val !== null ? JSON.parse(val) : defaultConfig[key];
@@ -74,7 +72,7 @@
   function setLocalConfig(key, value) {
     localStorage.setItem('nopic_local_' + key, JSON.stringify(value));
   }
-
+ 
   function getGlobalConfig(key) {
     const settings = GM_getValue('nopic_global_settings', {});
     return settings[key] !== undefined ? settings[key] : defaultConfig[key];
@@ -84,7 +82,7 @@
     settings[key] = value;
     GM_setValue('nopic_global_settings', settings);
   }
-
+ 
   let showOutlineConfig = getLocalConfig('showOutline');
   let hoverOnlyConfig = getLocalConfig('hoverOnly');
   let hoverShowImgConfig = getLocalConfig('hoverShowImg');
@@ -93,9 +91,9 @@
   let zoomModeConfig = getLocalConfig('zoomMode');
   let zoomLeaveModeConfig = getLocalConfig('zoomLeaveMode');
   let zoomPinModeConfig = getLocalConfig('zoomPinMode');
-let disableAnimationConfig = getLocalConfig('disableAnimation');
+  let disableAnimationConfig = getLocalConfig('disableAnimation');
   let statsRangeConfig = getGlobalConfig('statsRange');
-
+ 
   let configs = {
     time: getGlobalConfig('displayTime'),
     seconds: getGlobalConfig('displaySeconds'),
@@ -112,14 +110,14 @@ let disableAnimationConfig = getLocalConfig('disableAnimation');
     readChars: getGlobalConfig('displayReadChars'),
     adCount: getGlobalConfig('displayAdCount')
   };
-
+ 
   let isUISelfHidden = false;
   let isSleeping = false;
   let sleepTimer = null;
   let sleepBgTimer = null;
   let lastHiddenCount = -1;
   let glowTimer = null;
-
+ 
   // === 阅兵模式 ===
   let isParadeMode = false;
   let paradeOverlay = null;
@@ -138,17 +136,17 @@ let disableAnimationConfig = getLocalConfig('disableAnimation');
   let paradeSavedHtmlOverflow = '';
   let paradeZIndexCounter = 10;
   let paradeMenuItem = null;
-
+ 
   window.imgHidenSet = null;
   let imageControls = new Map();
   let imageOutlines = new Map();
   let imageZoomControls = new Map();
-
+ 
   let hoverZoomTimers = new Map();
   let imageTimers = new Map();
   let lastGlobalMouseX = 0,
     lastGlobalMouseY = 0;
-
+ 
   // 拖拽状态变量
   let isDraggingClone = false;
   let wasDragged = false;
@@ -157,11 +155,11 @@ let disableAnimationConfig = getLocalConfig('disableAnimation');
     dragStartLeft = 0,
     dragStartTop = 0;
   let draggedCloneEl = null; // 当前正在拖动的克隆图对应的原始元素
-
+ 
   // 钉图模式：记录每个放大元素的克隆信息
   let zoomedClones = new Map(); // el -> { clone, controls, wrapper }
   let pinZIndexCounter = 10;
-
+ 
   // --- 2. 样式定义 ---
   let spinnerTimer = null;
   const debounceTriggerSpinner = () => {
@@ -170,7 +168,7 @@ let disableAnimationConfig = getLocalConfig('disableAnimation');
       triggerSpinner();
     }, 100);
   };
-
+ 
   const style = document.createElement('style');
   style.id = 'nopic-injected-styles';
   style.innerHTML = `
@@ -195,7 +193,7 @@ img:not(.nopic-clone), svg:not(.nopic-clone), .nopic-has-bg:not(.nopic-clone) {
     filter: blur(25px) !important;
     opacity: 0 !important;
 }
-
+ 
         /* 跳出式放大容器 */
         #nopic-zoom-container {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -204,7 +202,7 @@ img:not(.nopic-clone), svg:not(.nopic-clone), .nopic-has-bg:not(.nopic-clone) {
             transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         #nopic-zoom-container.active { background: rgba(0, 0, 0, 0.6); pointer-events: auto; }
-
+ 
         /* 放大克隆图 */
         .nopic-clone {
             position: fixed !important;
@@ -223,14 +221,14 @@ img:not(.nopic-clone), svg:not(.nopic-clone), .nopic-has-bg:not(.nopic-clone) {
             cursor: grab !important;
         }
         #nopic-zoom-container * { outline: none !important; }
-
+ 
         .nopic-zoom-controls {
             position: fixed; top: 20px; right: 20px;
             display: flex; gap: 10px; z-index: 2147483641;
             opacity: 0; transition: opacity 0.3s 0.15s;
         }
         #nopic-zoom-container.active .nopic-zoom-controls { opacity: 1; }
-
+ 
         .nopic-zoom-controls .nopic-float-btn {
             width: 40px !important; height: 40px !important;
             min-width: 40px !important; min-height: 40px !important;
@@ -246,7 +244,7 @@ img:not(.nopic-clone), svg:not(.nopic-clone), .nopic-has-bg:not(.nopic-clone) {
             cursor: pointer !important; user-select: none !important;
         }
         .nopic-zoom-controls .nopic-float-btn:hover { background: rgba(255,255,255,0.4) !important; }
-
+ 
         /* 钉图模式下的关闭按钮（每张图独立） */
         .nopic-pin-close-btn {
             position: absolute !important;
@@ -264,7 +262,7 @@ img:not(.nopic-clone), svg:not(.nopic-clone), .nopic-has-bg:not(.nopic-clone) {
         .nopic-pin-close-btn:hover { background: rgba(255,50,50,0.8) !important; opacity: 1 !important; }
         .nopic-clone:hover + .nopic-pin-close-btn,
         .nopic-pin-close-btn:hover { opacity: 1 !important; }
-
+ 
         /* 虚线框 */
         .nopic-outline-box {
             position: absolute !important; z-index: 10; pointer-events: none; box-sizing: border-box;
@@ -278,7 +276,7 @@ img:not(.nopic-clone), svg:not(.nopic-clone), .nopic-has-bg:not(.nopic-clone) {
     transition: none !important;
 }
         .nopic-outline-active { opacity: 1 !important; background-position: 30px 0, -30px 100%, 0 -30px, 100% 30px !important; }
-
+ 
         /* 单个图片浮动按钮 */
         .nopic-float-btn {
             display: flex; align-items: center; justify-content: center; position: absolute !important; z-index: 11;
@@ -288,7 +286,7 @@ img:not(.nopic-clone), svg:not(.nopic-clone), .nopic-has-bg:not(.nopic-clone) {
         }
         .nopic-float-btn:hover { background: #2f2f2f !important; }
         .nopic-btn-active { opacity: 1 !important; transform: scale(1) !important; pointer-events: auto !important; }
-
+ 
         /* 方块倒计时 */
         .nopic-countdown-box {
             position: fixed;
@@ -310,7 +308,7 @@ img:not(.nopic-clone), svg:not(.nopic-clone), .nopic-has-bg:not(.nopic-clone) {
             66% { transform: scale(0.8); opacity: 0.7; animation-timing-function: cubic-bezier(0.4, 0, 1, 1); }
             100% { transform: scale(1.5); opacity: 0; }
         }
-
+ 
         /* 主仪表盘 */
         #nopic-widget {
             position: fixed; z-index: 2147483647; cursor: grab; user-select: none;
@@ -340,7 +338,7 @@ img:not(.nopic-clone), svg:not(.nopic-clone), .nopic-has-bg:not(.nopic-clone) {
     right: 0 !important;
 }
         #nopic-widget.sleeping #nopic-content { opacity: 0; height: 0; margin: 0; pointer-events: none; }
-
+ 
         #nopic-lamp {
             width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
             background: transparent !important; box-sizing: border-box; transition: none; align-self: center;
@@ -359,7 +357,7 @@ img:not(.nopic-clone), svg:not(.nopic-clone), .nopic-has-bg:not(.nopic-clone) {
         #nopic-widget.sleeping.snap-right #nopic-lamp { align-self: flex-start; margin-left: 3px; }
         #nopic-widget.sleeping #nopic-lamp { width: 6px; height: 6px; opacity: 1; animation: nopic-sleep-breathe 6s 0s infinite ease-in-out; }
         @keyframes nopic-sleep-breathe { 0% { opacity: 1; } 50% { opacity: 1; } 100% { opacity: 1; } }
-
+ 
         #nopic-content {
             font-size: 11px; line-height: 1.4; font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
             width: 100%; pointer-events: none; white-space: nowrap; height: auto; opacity: 1;
@@ -368,7 +366,7 @@ img:not(.nopic-clone), svg:not(.nopic-clone), .nopic-has-bg:not(.nopic-clone) {
         .stat-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         .stat-label { color: rgba(255,255,255,0.7); text-align: left; margin-right: 8px; }
         .stat-value { color: rgba(255,255,255,0.95); text-align: right; font-weight: 500; }
-
+ 
         #nopic-menu {
             position: fixed; z-index: 2147483646; pointer-events: none; opacity: 0;
             transform: translateX(-10px) scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease;
@@ -391,7 +389,7 @@ img:not(.nopic-clone), svg:not(.nopic-clone), .nopic-has-bg:not(.nopic-clone) {
         .nopic-switch.on::after { transform: translateX(12px); }
         .nopic-submenu-trigger::after { content: '›'; font-size: 16px; margin-left: 8px; opacity: 0.7; }
         .nopic-menu-separator { font-size: 10px; color: rgba(255,255,255,0.4); padding: 4px 10px; margin-top: 4px; cursor: default; border-top: 1px solid rgba(255,255,255,0.1); }
-
+ 
         #nopic-submenu {
             position: absolute; display: none; left: 100%; top: -6px; margin-left: 4px;
             background: rgba(30, 30, 35, 0.95); backdrop-filter: blur(24px) saturate(180%);
@@ -405,7 +403,7 @@ img:not(.nopic-clone), svg:not(.nopic-clone), .nopic-has-bg:not(.nopic-clone) {
   min-width: 170px; max-width: 220px; flex-direction: column; gap: 2px; z-index: 2147483647; max-height: 420px; overflow-y: auto; scrollbar-width: none;
 }
 #nopic-settings-submenu::-webkit-scrollbar { display: none; }
-
+ 
 #nopic-display-submenu {
   position: absolute; display: none; top: 0;
   background: rgba(30, 30, 35, 0.95); backdrop-filter: blur(24px) saturate(180%);
@@ -430,7 +428,7 @@ img:not(.nopic-clone), svg:not(.nopic-clone), .nopic-has-bg:not(.nopic-clone) {
 }
 #nopic-settings-submenu::-webkit-scrollbar { display: none; }
 #nopic-settings-submenu.left-side { left: auto; right: 100%; margin-left: 0; margin-right: 4px; }
-
+ 
 #nopic-display-submenu {
   position: absolute; display: none; left: 100%; top: -6px; margin-left: 4px;
   background: rgba(30, 30, 35, 0.95); backdrop-filter: blur(24px) saturate(180%);
@@ -448,13 +446,13 @@ img:not(.nopic-clone), svg:not(.nopic-clone), .nopic-has-bg:not(.nopic-clone) {
         .nopic-checkbox svg { width: 10px; height: 10px; fill: none; stroke: white; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; opacity: 0; transition: opacity 0.2s; }
         .nopic-checkbox.checked svg { opacity: 1; }
         .nopic-hide-item { color: #f87171; font-size: 11px; text-align: center; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 4px; }
-
+ 
         .nopic-range-container { padding: 4px; margin-top: 4px; background: rgba(0,0,0,0.15); border-radius: 6px; margin-bottom: 2px; }
         .nopic-range-switcher { display: flex; justify-content: space-between; border-radius: 4px; overflow: hidden; }
         .nopic-range-btn { font-size: 10px; padding: 3px 4px; cursor: pointer; color: rgba(255,255,255,0.6); flex: 1; text-align: center; transition: background 0.2s; border-radius: 4px; }
         .nopic-range-btn:hover { background: rgba(255,255,255,0.05); }
         .nopic-range-btn.active { background: #3b82f6; color: white; }
-
+ 
         /* ===== 阅兵模式 ===== */
         /* 过滤面板 */
         .nopic-parade-size-label {
@@ -513,7 +511,7 @@ img:not(.nopic-clone), svg:not(.nopic-clone), .nopic-has-bg:not(.nopic-clone) {
   cursor: pointer; font-size: 11px; transition: background 0.2s;
 }
 .nopic-parade-filter-panel .pf-apply:hover { background: rgba(96,165,250,0.35); }
-
+ 
 /* 过滤按钮（放在 header 里） */
 .nopic-parade-filter-btn {
   width: 32px; height: 32px;
@@ -538,7 +536,7 @@ img:not(.nopic-clone), svg:not(.nopic-clone), .nopic-has-bg:not(.nopic-clone) {
 #nopic-parade-overlay::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 3px; }
 .nopic-parade-content { position: relative; width: 100%; min-height: 100%; }
 .nopic-parade-content * { outline: none !important; }
-
+ 
 .nopic-parade-clone {
   position: absolute !important;
   display: block !important; visibility: visible !important; opacity: 1 !important;
@@ -559,7 +557,7 @@ img:not(.nopic-clone), svg:not(.nopic-clone), .nopic-has-bg:not(.nopic-clone) {
   min-width: 0 !important; min-height: 0 !important;
   transform: none !important;
 }
-
+ 
 #nopic-parade-header {
   position: fixed; top: 0; left: 0; right: 0;
   height: 48px; display: flex; align-items: center; justify-content: space-between;
@@ -618,24 +616,24 @@ img:not(.nopic-clone), svg:not(.nopic-clone), .nopic-has-bg:not(.nopic-clone) {
 .nopic-confirm-btn.danger:hover { background: rgba(248,113,113,0.35); }
     `;
   document.head.appendChild(style);
-
+ 
   // --- 3. 跳出式放大核心逻辑 ---
   let zoomContainer = document.createElement('div');
   zoomContainer.id = 'nopic-zoom-container';
   document.documentElement.appendChild(zoomContainer);
-
+ 
   let zoomCooldown = false;
-
+ 
   function startCountdownIndicator(el) {
     removeCountdownIndicator(el, true);
     const outline = imageOutlines.get(el);
     if (outline) outline.style.display = 'none';
-
+ 
     let box = document.createElement('div');
     box.className = 'nopic-countdown-box';
     document.documentElement.appendChild(box);
     imageTimers.set(el, box);
-
+ 
     function updatePos(e) {
       if (!box.parentNode) return;
       box.style.left = e.clientX - 12 + 'px';
@@ -644,12 +642,12 @@ img:not(.nopic-clone), svg:not(.nopic-clone), .nopic-has-bg:not(.nopic-clone) {
     el._nopicMoveHandler = updatePos;
     document.addEventListener('mousemove', updatePos);
     updatePos({ clientX: lastGlobalMouseX, clientY: lastGlobalMouseY });
-
+ 
     requestAnimationFrame(() => {
       box.classList.add('counting');
     });
   }
-
+ 
   function removeCountdownIndicator(el, immediate) {
     const box = imageTimers.get(el);
     const outline = imageOutlines.get(el);
@@ -674,7 +672,7 @@ img:not(.nopic-clone), svg:not(.nopic-clone), .nopic-has-bg:not(.nopic-clone) {
       imageTimers.delete(el);
     }
   }
-
+ 
   function startHoverZoomTimer(el) {
     if (document.querySelector('.nopic-clone') && !zoomPinModeConfig) return;
     cancelHoverZoomTimer(el, true);
@@ -682,7 +680,7 @@ img:not(.nopic-clone), svg:not(.nopic-clone), .nopic-has-bg:not(.nopic-clone) {
     const isHidden = el.dataset.isHidden === 'true';
     const shouldZoom = hoverShowImgConfig || (!hoverShowImgConfig && !isHidden);
     if (!shouldZoom) return;
-
+ 
     const timerId = setTimeout(() => {
       hoverZoomTimers.delete(el);
       startCountdownIndicator(el);
@@ -695,19 +693,19 @@ img:not(.nopic-clone), svg:not(.nopic-clone), .nopic-has-bg:not(.nopic-clone) {
       }, 1000);
       hoverZoomTimers.set(el, animTimer);
     }, 1000);
-
+ 
     hoverZoomTimers.set(el, timerId);
   }
-
+ 
   function restartHoverZoomTimer(el) {
     if (document.querySelector('.nopic-clone') && !zoomPinModeConfig) return;
     if (zoomCooldown || el._isZoomed) return;
     const isHidden = el.dataset.isHidden === 'true';
     const shouldZoom = hoverShowImgConfig || (!hoverShowImgConfig && !isHidden);
     if (!shouldZoom) return;
-
+ 
     clearTimeout(hoverZoomTimers.get(el));
-
+ 
     const box = imageTimers.get(el);
     if (box) {
       box.classList.remove('counting');
@@ -716,7 +714,7 @@ img:not(.nopic-clone), svg:not(.nopic-clone), .nopic-has-bg:not(.nopic-clone) {
     } else {
       startCountdownIndicator(el);
     }
-
+ 
     const animTimer = setTimeout(() => {
       removeCountdownIndicator(el, true);
       if (el.isHovering && !el._isZoomed && !zoomCooldown) {
@@ -726,7 +724,7 @@ img:not(.nopic-clone), svg:not(.nopic-clone), .nopic-has-bg:not(.nopic-clone) {
     }, 1000);
     hoverZoomTimers.set(el, animTimer);
   }
-
+ 
   function cancelHoverZoomTimer(el, immediate) {
     const timerId = hoverZoomTimers.get(el);
     if (timerId) {
@@ -735,7 +733,7 @@ img:not(.nopic-clone), svg:not(.nopic-clone), .nopic-has-bg:not(.nopic-clone) {
     }
     removeCountdownIndicator(el, immediate || false);
   }
-
+ 
   function getCloneAtPoint(x, y) {
     const clones = Array.from(zoomContainer.querySelectorAll('.nopic-clone'));
     // 按 z-index 从高到低排序，确保先找到最上层的
@@ -752,7 +750,7 @@ img:not(.nopic-clone), svg:not(.nopic-clone), .nopic-has-bg:not(.nopic-clone) {
     }
     return null;
   }
-
+ 
   // 根据克隆图找到对应的原始元素
   function getElByClone(clone) {
     for (const [el, info] of zoomedClones) {
@@ -760,11 +758,11 @@ img:not(.nopic-clone), svg:not(.nopic-clone), .nopic-has-bg:not(.nopic-clone) {
     }
     return null;
   }
-
+ 
   // ==============================
   // 阅兵模式
   // ==============================
-
+ 
   function getParadeCloneAtPoint(x, y) {
     if (!paradeOverlay) return null;
     const clones = Array.from(paradeOverlay.querySelectorAll('.nopic-parade-clone'));
@@ -781,76 +779,74 @@ img:not(.nopic-clone), svg:not(.nopic-clone), .nopic-has-bg:not(.nopic-clone) {
     }
     return null;
   }
-
+ 
   function getParadeElByClone(clone) {
     for (const [el, info] of paradeClones) {
       if (info.clone === clone) return el;
     }
     return null;
   }
-
+ 
   function enterParadeMode() {
     if (isParadeMode) {
       exitParadeMode();
       return;
     }
     paradeZIndexCounter = 10;
-
+ 
     // 先关闭所有已有的钉图/放大
     imageControls.forEach((btn, el) => {
       if (el._isZoomed) zoomOut(el);
     });
-
+ 
     const imageData = [];
-
+ 
     const allImages = document.querySelectorAll(
-  'img:not(.nopic-clone):not(.nopic-parade-clone), svg:not(.nopic-clone):not(.nopic-parade-clone), .nopic-has-bg:not(.nopic-clone):not(.nopic-parade-clone), [style*="background-image"]:not(.nopic-clone):not(.nopic-parade-clone)'
-);
-allImages.forEach(el => {
-  if (!el.isConnected) return;
-  if (el.id === 'nopic-about-img' || el.closest('#nopic-about-modal')) return;
-  
-  // 添加和 imgHiden() 一致的过滤逻辑
-  const bg = window.getComputedStyle(el).backgroundImage;
-  const isTarget =
-    el.tagName === 'IMG' ||
-    el.tagName === 'SVG' ||
-    (bg && bg !== 'none' && bg.includes('url'));
-  if (!isTarget) return;
-  
-  const rect = el.getBoundingClientRect();
-  const hasText =
-    (el.tagName === 'DIV' || el.tagName === 'SPAN') && el.innerText.trim().length > 0;
-  
-  // 使用 imgHiden() 一致的过滤条件：width > 15 && height > 15 && !hasText
-  if (rect.width > 15 && rect.height > 15 && !hasText) {
-    if (paradeFilter.enabled) {
-      const naturalW = Math.round(rect.width) || el.offsetWidth;
-      const naturalH = Math.round(rect.height) || el.offsetHeight;
-      if (
-        naturalW < paradeFilter.minW ||
-        naturalW > paradeFilter.maxW ||
-        naturalH < paradeFilter.minH ||
-        naturalH > paradeFilter.maxH
-      )
-        return;
-    }
-    const wasHidden = el.dataset.isHidden === 'true';
-    imageData.push({ el, wasHidden });
-  }
-});
+      'img:not(.nopic-clone):not(.nopic-parade-clone), svg:not(.nopic-clone):not(.nopic-parade-clone), .nopic-has-bg:not(.nopic-clone):not(.nopic-parade-clone), [style*="background-image"]:not(.nopic-clone):not(.nopic-parade-clone)'
+    );
+    allImages.forEach(el => {
+      if (!el.isConnected) return;
+      if (el.id === 'nopic-about-img' || el.closest('#nopic-about-modal')) return;
+ 
+      // 添加和 imgHiden() 一致的过滤逻辑
+      const bg = window.getComputedStyle(el).backgroundImage;
+      const isTarget =
+        el.tagName === 'IMG' || el.tagName === 'SVG' || (bg && bg !== 'none' && bg.includes('url'));
+      if (!isTarget) return;
+ 
+      const rect = el.getBoundingClientRect();
+      const hasText =
+        (el.tagName === 'DIV' || el.tagName === 'SPAN') && el.innerText.trim().length > 0;
+ 
+      // 使用 imgHiden() 一致的过滤条件：width > 15 && height > 15 && !hasText
+      if (rect.width > 15 && rect.height > 15 && !hasText) {
+        if (paradeFilter.enabled) {
+          const naturalW = Math.round(rect.width) || el.offsetWidth;
+          const naturalH = Math.round(rect.height) || el.offsetHeight;
+          if (
+            naturalW < paradeFilter.minW ||
+            naturalW > paradeFilter.maxW ||
+            naturalH < paradeFilter.minH ||
+            naturalH > paradeFilter.maxH
+          )
+            return;
+        }
+        const wasHidden = el.dataset.isHidden === 'true';
+        imageData.push({ el, wasHidden });
+      }
+    });
     if (imageData.length === 0) return;
-
+ 
     isParadeMode = true;
     const paradeBtn = document.querySelector('[data-action="paradeMode"]');
     if (paradeBtn) paradeBtn.textContent = '退出阅兵模式';
-
+ 
     // 阻止页面滚动
     paradeSavedBodyOverflow = document.body.style.overflow;
     paradeSavedHtmlOverflow = document.documentElement.style.overflow;
     document.body.style.overflow = 'hidden';
     document.documentElement.style.overflow = 'hidden';
-
+ 
     // 【第一步】取消所有图片隐藏状态，虚线消失
     imageData.forEach(({ el, wasHidden }) => {
       el._paradeWasHidden = wasHidden; // 记录原状态
@@ -863,11 +859,11 @@ allImages.forEach(el => {
         if (btn) btn.innerText = '隐';
       }
     });
-
+ 
     // 等待显现动画完成（0.5s）
     setTimeout(() => {
       if (!isParadeMode) return; // 防御性检查
-
+ 
       // 【第二步】收集最新位置并创建克隆图
       const layoutData = [];
       imageData.forEach(({ el }) => {
@@ -883,7 +879,7 @@ allImages.forEach(el => {
         exitParadeMode();
         return;
       }
-
+ 
       // ---- 计算网格布局 ----
       const GAP = 28;
       const HEADER_H = 48;
@@ -892,7 +888,7 @@ allImages.forEach(el => {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
       const maxRowW = vw - SIDE_PAD * 2;
-
+ 
       const TEMP_H = 200;
       let tempRows = 0,
         tempRowW = 0;
@@ -906,13 +902,13 @@ allImages.forEach(el => {
         }
       });
       if (tempRowW > 0) tempRows++;
-
+ 
       const availH = vh - TOP_PAD - 20;
       const UNI_H = Math.min(
         280,
         Math.max(80, Math.floor((availH - Math.max(0, tempRows - 1) * GAP) / Math.max(1, tempRows)))
       );
-
+ 
       const rows = [];
       let curRow = [];
       let curRowW = 0;
@@ -927,7 +923,7 @@ allImages.forEach(el => {
         curRowW += tw + (curRow.length > 1 ? GAP : 0);
       });
       if (curRow.length > 0) rows.push(curRow);
-
+ 
       let curY = TOP_PAD;
       const positions = new Map();
       rows.forEach(row => {
@@ -940,14 +936,14 @@ allImages.forEach(el => {
         curY += UNI_H + GAP;
       });
       const totalH = curY + 36;
-
+ 
       // ---- 创建遮罩层 ----
       paradeOverlay = document.createElement('div');
       paradeOverlay.id = 'nopic-parade-overlay';
       const content = document.createElement('div');
       content.className = 'nopic-parade-content';
       content.style.height = totalH + 'px';
-
+ 
       // ---- 创建顶部状态栏 ----
       paradeHeader = document.createElement('div');
       paradeHeader.id = 'nopic-parade-header';
@@ -960,7 +956,7 @@ allImages.forEach(el => {
         (paradeFilter.enabled
           ? ' <span style="color:#60a5fa;font-size:11px;">(已过滤)</span>'
           : '');
-
+ 
       const closeBtn = document.createElement('div');
       closeBtn.className = 'nopic-parade-close-btn';
       closeBtn.innerHTML = '✕';
@@ -970,14 +966,14 @@ allImages.forEach(el => {
       });
       paradeHeader.appendChild(titleSpan);
       paradeHeader.appendChild(closeBtn);
-
+ 
       // ---- 创建克隆图（初始位置=原图屏幕位置） ----
       layoutData.forEach(({ el, rect }) => {
         const tp = positions.get(el);
         el._paradeSavedVisibility = el.style.visibility;
         el.style.visibility = 'hidden';
         el._isParadeZoomed = true;
-
+ 
         // 创建包装器，用于承载克隆图和尺寸标签
         const wrapper = document.createElement('div');
         wrapper.style.position = 'absolute';
@@ -987,7 +983,7 @@ allImages.forEach(el => {
         wrapper.style.height = rect.height + 'px';
         wrapper.style.zIndex = String(++paradeZIndexCounter);
         wrapper.style.transition = 'none';
-
+ 
         const clone = el.cloneNode(true);
         clone.id = '';
         clone.classList.remove(
@@ -1002,31 +998,31 @@ allImages.forEach(el => {
         clone.style.setProperty('opacity', '1', 'important');
         clone.style.setProperty('filter', 'none', 'important');
         clone.style.setProperty('border', 'none', 'important');
-
+ 
         clone.style.left = '0';
         clone.style.top = '0';
         clone.style.width = '100%';
         clone.style.height = '100%';
         clone.style.boxShadow = '0 8px 30px rgba(0,0,0,0.4)';
         clone.style.setProperty('z-index', '1', 'important');
-
+ 
         // 尺寸标签 - 显示图片在页面的渲染尺寸
         const sizeLabel = document.createElement('div');
         sizeLabel.className = 'nopic-parade-size-label';
         sizeLabel.textContent = Math.round(rect.width) + '×' + Math.round(rect.height);
-
+ 
         wrapper.appendChild(clone);
         wrapper.appendChild(sizeLabel);
         content.appendChild(wrapper);
-
+ 
         // 保存 wrapper 引用，方便后续动画操作
         paradeClones.set(el, { clone, wrapper, originalRect: rect, targetPos: tp, sizeLabel });
       });
-
+ 
       paradeOverlay.appendChild(content);
       document.documentElement.appendChild(paradeOverlay);
       document.documentElement.appendChild(paradeHeader);
-
+ 
       // ---- 激活遮罩 + 飞入动画 ----
       requestAnimationFrame(() => {
         paradeOverlay.classList.add('active');
@@ -1045,7 +1041,7 @@ allImages.forEach(el => {
           });
         });
       });
-
+ 
       // ---- 阅兵模式交互事件 ----
       paradeOverlay.addEventListener('click', e => {
         if (paradeDragState.wasDragged) {
@@ -1056,7 +1052,7 @@ allImages.forEach(el => {
           exitParadeMode();
         }
       });
-
+ 
       paradeOverlay.addEventListener(
         'mousedown',
         e => {
@@ -1081,7 +1077,7 @@ allImages.forEach(el => {
         },
         true
       );
-
+ 
       paradeOverlay.addEventListener(
         'wheel',
         e => {
@@ -1089,26 +1085,26 @@ allImages.forEach(el => {
           if (!clone) return;
           e.preventDefault();
           e.stopPropagation();
-
+ 
           // 找到 clone 所在的 wrapper
           const wrapper = clone.parentElement;
           if (!wrapper) return;
-
+ 
           wrapper.style.zIndex = String(++paradeZIndexCounter);
-
+ 
           const rect = clone.getBoundingClientRect();
           const step = e.deltaY < 0 ? 1.1 : 0.9;
           const nw = rect.width * step;
           const nh = rect.height * step;
-
+ 
           const scrollLeft = paradeOverlay.scrollLeft;
           const scrollTop = paradeOverlay.scrollTop;
           const centerX = rect.left + rect.width / 2 + scrollLeft;
           const centerY = rect.top + rect.height / 2 + scrollTop;
-
+ 
           const newLeft = centerX - nw / 2;
           const newTop = centerY - nh / 2;
-
+ 
           wrapper.style.transition = 'none';
           wrapper.style.left = newLeft + 'px';
           wrapper.style.top = newTop + 'px';
@@ -1117,16 +1113,16 @@ allImages.forEach(el => {
         },
         { passive: false }
       );
-
+ 
       paradeOverlay.addEventListener('mousedown', e => {
         if (e.button !== 0) return;
         const clone = getParadeCloneAtPoint(e.clientX, e.clientY);
         if (!clone) return;
         e.preventDefault();
-
+ 
         const wrapper = clone.parentElement;
         if (wrapper) wrapper.style.zIndex = String(++paradeZIndexCounter);
-
+ 
         paradeDragState.isDragging = true;
         paradeDragState.wasDragged = false;
         paradeDragState.startX = e.clientX;
@@ -1137,12 +1133,12 @@ allImages.forEach(el => {
         clone.style.setProperty('transition', 'none', 'important');
         clone.style.cursor = 'grabbing';
       });
-
+ 
       document.addEventListener('mousemove', paradeDragMoveHandler);
       document.addEventListener('mouseup', paradeDragUpHandler);
     }, 100); // 等待图片显现动画完成
   }
-
+ 
   // 拖拽移动处理函数（独立定义，方便注销）
   function paradeDragMoveHandler(e) {
     if (!paradeDragState.isDragging || !paradeDragState.currentEl) return;
@@ -1151,15 +1147,15 @@ allImages.forEach(el => {
     const wrapper = info.wrapper;
     const dx = e.clientX - paradeDragState.startX;
     const dy = e.clientY - paradeDragState.startY;
-
+ 
     // 拖动时禁用过渡，确保跟手
     wrapper.style.transition = 'none';
-
+ 
     wrapper.style.left = paradeDragState.startScreenLeft + dx + paradeOverlay.scrollLeft + 'px';
     wrapper.style.top = paradeDragState.startScreenTop + dy + paradeOverlay.scrollTop + 'px';
     if (Math.hypot(dx, dy) > 3) paradeDragState.wasDragged = true;
   }
-
+ 
   function paradeDragUpHandler(e) {
     if (!paradeDragState.isDragging) return;
     const info = paradeClones.get(paradeDragState.currentEl);
@@ -1167,32 +1163,32 @@ allImages.forEach(el => {
     paradeDragState.isDragging = false;
     paradeDragState.currentEl = null;
   }
-
+ 
   // ===== 退出阅兵模式 =====
   function exitParadeMode() {
     if (!isParadeMode) return;
     isParadeMode = false;
     const paradeBtn = document.querySelector('[data-action="paradeMode"]');
     if (paradeBtn) paradeBtn.textContent = '开启阅兵模式';
-
+ 
     // 注销拖拽监听
     document.removeEventListener('mousemove', paradeDragMoveHandler);
     document.removeEventListener('mouseup', paradeDragUpHandler);
-
+ 
     const scrollLeft = paradeOverlay.scrollLeft;
     const scrollTop = paradeOverlay.scrollTop;
-
+ 
     // 第一步：克隆图飞回原位
     paradeClones.forEach(({ clone, wrapper, originalRect: rect, targetPos: tp, sizeLabel }, el) => {
       if (!el.isConnected) {
         wrapper.remove();
         return;
       }
-
+ 
       const curRect = el.getBoundingClientRect();
       const flyLeft = curRect.left + scrollLeft;
       const flyTop = curRect.top + scrollTop;
-
+ 
       const ez = 'cubic-bezier(0.25, 0.1, 0.25, 1)';
       wrapper.style.transition =
         'left 0.55s ' + ez + ', top 0.55s ' + ez + ', width 0.55s ' + ez + ', height 0.55s ' + ez;
@@ -1203,12 +1199,12 @@ allImages.forEach(el => {
       clone.style.boxShadow = '0 0 0 rgba(0,0,0,0)';
       clone.style.pointerEvents = 'none';
     });
-
+ 
     // 第二步：等飞回动画彻底结束后(550ms)，再淡出遮罩
     setTimeout(() => {
       if (paradeOverlay) paradeOverlay.classList.remove('active');
       if (paradeHeader) paradeHeader.classList.remove('active');
-
+ 
       // 第三步：等遮罩淡出后(300ms)，清理DOM并恢复原图状态
       setTimeout(() => {
         paradeClones.forEach(({ wrapper }, el) => {
@@ -1217,7 +1213,7 @@ allImages.forEach(el => {
               el._paradeSavedVisibility !== undefined ? el._paradeSavedVisibility : '';
             delete el._paradeSavedVisibility;
             delete el._isParadeZoomed;
-
+ 
             if (el._paradeWasHidden) {
               el.classList.add('nopic-hidden');
               el.dataset.isHidden = 'true';
@@ -1232,12 +1228,12 @@ allImages.forEach(el => {
           if (wrapper && wrapper.parentNode) wrapper.remove();
         });
         paradeClones.clear();
-
+ 
         if (paradeOverlay && paradeOverlay.parentNode) paradeOverlay.remove();
         paradeOverlay = null;
         if (paradeHeader && paradeHeader.parentNode) paradeHeader.remove();
         paradeHeader = null;
-
+ 
         // 恢复页面滚动
         document.body.style.overflow = paradeSavedBodyOverflow;
         document.documentElement.style.overflow = paradeSavedHtmlOverflow;
@@ -1245,13 +1241,13 @@ allImages.forEach(el => {
     }, 550); // 飞回动画时间
     updateAllUI();
   }
-
+ 
   // ===== 单图飞回原位（阅兵模式下中键点击） =====
   function paradeZoomOutSingle(el) {
     const info = paradeClones.get(el);
     if (!info) return;
     const { clone, originalRect: rect, targetPos: tp } = info;
-
+ 
     if (!el.isConnected) {
       clone.remove();
       paradeClones.delete(el);
@@ -1259,13 +1255,13 @@ allImages.forEach(el => {
       if (paradeClones.size === 0) exitParadeMode();
       return;
     }
-
+ 
     const curRect = el.getBoundingClientRect();
     const scrollLeft = paradeOverlay.scrollLeft;
     const scrollTop = paradeOverlay.scrollTop;
     const flyLeft = curRect.left + scrollLeft;
     const flyTop = curRect.top + scrollTop;
-
+ 
     const ez = 'cubic-bezier(0.25, 0.1, 0.25, 1)'; // 更平滑的减速曲线
     clone.style.setProperty(
       'transition',
@@ -1281,25 +1277,25 @@ allImages.forEach(el => {
         ez,
       'important'
     );
-
+ 
     clone.style.left = flyLeft + 'px';
     clone.style.top = flyTop + 'px';
     clone.style.width = curRect.width + 'px';
     clone.style.height = curRect.height + 'px';
     clone.style.boxShadow = '0 0 0 rgba(0,0,0,0)';
     clone.style.pointerEvents = 'none';
-
+ 
     setTimeout(() => {
       const info = paradeClones.get(el);
       if (info && info.wrapper && info.wrapper.parentNode) info.wrapper.remove();
       paradeClones.delete(el);
-
+ 
       // 恢复原图可见
       el.style.visibility =
         el._paradeSavedVisibility !== undefined ? el._paradeSavedVisibility : '';
       delete el._paradeSavedVisibility;
       delete el._isParadeZoomed;
-
+ 
       // 还原原来隐藏的状态
       if (el._paradeWasHidden) {
         el.classList.add('nopic-hidden');
@@ -1311,40 +1307,40 @@ allImages.forEach(el => {
         delete el._paradeWasHidden;
         syncElementPosition(el);
       }
-
+ 
       if (paradeClones.size === 0) exitParadeMode();
     }, 500); // 延长清理时间，确保动画完成
   }
-
+ 
   function zoomIn(el, btn, zoomBtn, fromHover) {
     if (el._isZoomed || zoomCooldown) return;
     if (isParadeMode) return; // 确保有这行
     cancelHoverZoomTimer(el, true);
     el._isZoomed = true;
-
+ 
     const outline = imageOutlines.get(el);
     if (outline) outline.style.display = 'none';
-
+ 
     const rect = el.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) {
       el._isZoomed = false;
       return;
     }
-
+ 
     el._savedVisibility = el.style.visibility;
     el.style.visibility = 'hidden';
-
+ 
     let clone = el.cloneNode(true);
     clone.id = '';
     clone.classList.remove('nopic-hidden', 'nopic-has-bg', 'nopic-outline-box', 'nopic-float-btn');
     clone.classList.add('nopic-clone');
-
+ 
     clone.style.left = rect.left + 'px';
     clone.style.top = rect.top + 'px';
     clone.style.width = rect.width + 'px';
     clone.style.height = rect.height + 'px';
     clone.style.boxShadow = '0 8px 30px rgba(0,0,0,0.4)';
-
+ 
     const vw = window.innerWidth * 0.9;
     const vh = window.innerHeight * 0.9;
     const targetScale = Math.min(vw / rect.width, vh / rect.height, 5);
@@ -1352,15 +1348,15 @@ allImages.forEach(el => {
     const targetHeight = rect.height * targetScale;
     const targetLeft = (window.innerWidth - targetWidth) / 2;
     const targetTop = (window.innerHeight - targetHeight) / 2;
-
+ 
     // 钉图模式：不清空容器，支持多图共存
     if (!zoomPinModeConfig) {
       zoomContainer.innerHTML = '';
       zoomContainer.classList.add('active');
     }
-
+ 
     zoomContainer.appendChild(clone);
-
+ 
     // 钉图模式：添加独立关闭按钮
     let closeBtn = null;
     if (zoomPinModeConfig) {
@@ -1394,10 +1390,10 @@ allImages.forEach(el => {
         zoomContainer.appendChild(controlPanel);
       }
     }
-
+ 
     // 记录克隆信息
     zoomedClones.set(el, { clone: clone, closeBtn: closeBtn });
-
+ 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         const easing = 'cubic-bezier(0.16, 1, 0.3, 1)';
@@ -1415,7 +1411,7 @@ allImages.forEach(el => {
             easing,
           'important'
         );
-
+ 
         clone.style.left = targetLeft + 'px';
         clone.style.top = targetTop + 'px';
         clone.style.width = targetWidth + 'px';
@@ -1426,15 +1422,15 @@ allImages.forEach(el => {
       });
     });
   }
-
+ 
   function zoomOut(el) {
     if (!el._isZoomed) return;
     el._isZoomed = false;
-
+ 
     const info = zoomedClones.get(el);
     const clone = info ? info.clone : null;
     const closeBtn = info ? info.closeBtn : null;
-
+ 
     if (clone && el.isConnected) {
       const rect = el.getBoundingClientRect();
       if (rect.width > 0 && rect.height > 0) {
@@ -1483,7 +1479,7 @@ allImages.forEach(el => {
       clone.style.setProperty('filter', 'blur(20px)', 'important');
       clone.style.setProperty('opacity', '0', 'important');
     }
-
+ 
     if (!zoomPinModeConfig) {
       zoomContainer.classList.remove('active');
     }
@@ -1491,30 +1487,30 @@ allImages.forEach(el => {
     setTimeout(() => {
       zoomCooldown = false;
     }, 300);
-
+ 
     setTimeout(() => {
       if (el._savedVisibility !== undefined) el.style.visibility = el._savedVisibility;
       delete el._savedVisibility;
       const outline = imageOutlines.get(el);
       if (outline) outline.style.display = '';
-
+ 
       if (clone && clone.parentNode) clone.remove();
       zoomedClones.delete(el);
     }, 450); // 延长一点时间，确保模糊动画播完再移除DOM
   }
-
+ 
   // 滚轮缩放 - 钉图模式下精准定位到鼠标下的图
   zoomContainer.addEventListener(
     'wheel',
     e => {
       let clone = getCloneAtPoint(e.clientX, e.clientY);
-
+ 
       // 非钉图模式（聚焦模式）：只要有放大图，滚轮在容器任何位置都有效，作用于当前唯一图
       if (!clone && !zoomPinModeConfig) {
         const clones = zoomContainer.querySelectorAll('.nopic-clone');
         if (clones.length > 0) clone = clones[clones.length - 1];
       }
-
+ 
       if (!clone) {
         // 钉图模式下且鼠标不在任何图上，不拦截，让页面滚动
         if (zoomPinModeConfig) return;
@@ -1523,19 +1519,19 @@ allImages.forEach(el => {
       }
       e.preventDefault();
       e.stopPropagation();
-
+ 
       clone.style.zIndex = ++pinZIndexCounter;
-
+ 
       const rect = clone.getBoundingClientRect();
       const scaleStep = e.deltaY < 0 ? 1.1 : 0.9;
       let newWidth = rect.width * scaleStep;
       let newHeight = rect.height * scaleStep;
-
+ 
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
       const newLeft = centerX - newWidth / 2;
       const newTop = centerY - newHeight / 2;
-
+ 
       clone.style.setProperty('transition', 'none', 'important');
       clone.style.left = newLeft + 'px';
       clone.style.top = newTop + 'px';
@@ -1544,7 +1540,7 @@ allImages.forEach(el => {
     },
     { passive: false }
   );
-
+ 
   // 拖动逻辑 - 支持多图独立拖动
   zoomContainer.addEventListener('mousedown', e => {
     const clone = getCloneAtPoint(e.clientX, e.clientY);
@@ -1562,7 +1558,7 @@ allImages.forEach(el => {
     clone.style.cursor = 'grabbing !important';
     zoomContainer.style.cursor = 'grabbing';
   });
-
+ 
   document.addEventListener('mouseup', e => {
     if (!isDraggingClone) return;
     isDraggingClone = false;
@@ -1572,7 +1568,7 @@ allImages.forEach(el => {
     if (Math.hypot(e.clientX - dragStartX, e.clientY - dragStartY) > 3) wasDragged = true;
     draggedCloneEl = null;
   });
-
+ 
   document.addEventListener('mousemove', e => {
     if (!isDraggingClone || !draggedCloneEl) return;
     const info = zoomedClones.get(draggedCloneEl);
@@ -1583,7 +1579,7 @@ allImages.forEach(el => {
     clone.style.left = newLeft + 'px';
     clone.style.top = newTop + 'px';
   });
-
+ 
   // 鼠标移出检测 - 仅聚焦模式且"离开图片"选项时生效
   zoomContainer.addEventListener('mousemove', e => {
     if (isDraggingClone) return;
@@ -1606,7 +1602,7 @@ allImages.forEach(el => {
       }
     }
   });
-
+ 
   zoomContainer.addEventListener('click', e => {
     if (wasDragged) {
       wasDragged = false;
@@ -1630,7 +1626,7 @@ allImages.forEach(el => {
       });
     }
   });
-
+ 
   // --- 4. 图片控制逻辑 ---
   const syncElementPosition = el => {
     const btn = imageControls.get(el),
@@ -1707,7 +1703,7 @@ allImages.forEach(el => {
       }
     }
   };
-
+ 
   document.addEventListener('mousemove', e => {
     lastGlobalMouseX = e.clientX;
     lastGlobalMouseY = e.clientY;
@@ -1739,7 +1735,7 @@ allImages.forEach(el => {
           e.clientY <= rect.top + hitAreaWidth;
       }
       const isInside = isInsideImage || isInsideBtnArea;
-
+ 
       if (zoomModeConfig === 'hover') {
         if (isInside) {
           if (!wasHovering) {
@@ -1766,16 +1762,26 @@ allImages.forEach(el => {
       }
     });
   });
-
+ 
   // 中键 mousedown：处理放大/关闭
   document.addEventListener(
     'mousedown',
     e => {
       if (e.button !== 1) return;
-      if (window.imgHidenSet === null) return;
+      const isRedLight = window.imgHidenSet === null;
+ 
+      // 红灯状态下，hover和click逻辑上等同于middle
+      let effectiveZoomMode = zoomModeConfig;
+      if (isRedLight && (zoomModeConfig === 'hover' || zoomModeConfig === 'click')) {
+        effectiveZoomMode = 'middle';
+      }
+ 
+      // 红灯状态下，如果有效模式是关，直接返回（保留原生中键行为，如打开链接）
+      if (isRedLight && effectiveZoomMode === 'off') return;
+ 
       // ★【修改2】阅兵模式下的中键由遮罩层事件处理，此处不干预
       if (isParadeMode) return;
-
+ 
       const clone = getCloneAtPoint(e.clientX, e.clientY);
       if (clone) {
         e.preventDefault();
@@ -1784,27 +1790,49 @@ allImages.forEach(el => {
         if (el && el._isZoomed) zoomOut(el);
         return;
       }
-
+ 
       let targetEl = null;
-      imageControls.forEach((btn, el) => {
-        if (el._isZoomed) return;
-        const rect = el.getBoundingClientRect();
-        const margin = 10;
-        if (
-          e.clientX >= rect.left - margin &&
-          e.clientX <= rect.right + margin &&
-          e.clientY >= rect.top - margin &&
-          e.clientY <= rect.bottom + margin
-        ) {
-          targetEl = el;
+      if (isRedLight) {
+        // 红灯状态：动态遍历查找目标图片（因为此时 imageControls 被清空了）
+        const allEls = document.querySelectorAll('img, svg, .nopic-has-bg, [style*="background-image"]');
+        for (const el of allEls) {
+          if (el._isZoomed || el.classList.contains('nopic-clone') || el.classList.contains('nopic-parade-clone')) continue;
+          const rect = el.getBoundingClientRect();
+          const margin = 10;
+          if (e.clientX >= rect.left - margin && e.clientX <= rect.right + margin &&
+              e.clientY >= rect.top - margin && e.clientY <= rect.bottom + margin) {
+            const bg = window.getComputedStyle(el).backgroundImage;
+            const isTarget = el.tagName === 'IMG' || el.tagName === 'SVG' || (bg && bg !== 'none' && bg.includes('url'));
+            const hasText = (el.tagName === 'DIV' || el.tagName === 'SPAN') && el.innerText.trim().length > 0;
+            if (isTarget && rect.width > 15 && rect.height > 15 && !hasText) {
+              targetEl = el;
+              break;
+            }
+          }
         }
-      });
-
-      if (targetEl && zoomModeConfig === 'middle') {
+      } else {
+        // 绿灯状态：从控件记录中查找
+        imageControls.forEach((btn, el) => {
+          if (el._isZoomed) return;
+          const rect = el.getBoundingClientRect();
+          const margin = 10;
+          if (
+            e.clientX >= rect.left - margin &&
+            e.clientX <= rect.right + margin &&
+            e.clientY >= rect.top - margin &&
+            e.clientY <= rect.bottom + margin
+          ) {
+            targetEl = el;
+          }
+        });
+      }
+ 
+      if (targetEl && effectiveZoomMode === 'middle') {
         e.preventDefault();
         e.stopPropagation();
+        // 红灯状态允许直接放大；绿灯状态按原逻辑判断
         const isHidden = targetEl.dataset.isHidden === 'true';
-        const shouldZoom = hoverShowImgConfig || (!hoverShowImgConfig && !isHidden);
+        const shouldZoom = isRedLight || hoverShowImgConfig || (!hoverShowImgConfig && !isHidden);
         if (shouldZoom && !targetEl._isZoomed && !zoomCooldown) {
           const btn = imageControls.get(targetEl);
           const zoomBtn = imageZoomControls.get(targetEl);
@@ -1812,7 +1840,7 @@ allImages.forEach(el => {
         }
         return;
       }
-
+ 
       if (!zoomPinModeConfig && document.querySelector('.nopic-clone')) {
         e.preventDefault();
         e.stopPropagation();
@@ -1823,42 +1851,70 @@ allImages.forEach(el => {
     },
     true
   );
-
+ 
   // 中键 auxclick：兜底阻止默认行为
   document.addEventListener(
     'auxclick',
     e => {
       if (e.button !== 1) return;
-
+      const isRedLight = window.imgHidenSet === null;
+ 
+      // 红灯状态下，hover和click逻辑上等同于middle
+      let effectiveZoomMode = zoomModeConfig;
+      if (isRedLight && (zoomModeConfig === 'hover' || zoomModeConfig === 'click')) {
+        effectiveZoomMode = 'middle';
+      }
+ 
       const clone = getCloneAtPoint(e.clientX, e.clientY);
       if (clone) {
         e.preventDefault();
         e.stopPropagation();
         return;
       }
-
+ 
       let hitImage = false;
-      imageControls.forEach((btn, el) => {
-        const rect = el.getBoundingClientRect();
-        const margin = 10;
-        if (
-          e.clientX >= rect.left - margin &&
-          e.clientX <= rect.right + margin &&
-          e.clientY >= rect.top - margin &&
-          e.clientY <= rect.bottom + margin
-        ) {
-          hitImage = true;
+      if (isRedLight) {
+        // 红灯状态：动态遍历查找目标图片
+        const allEls = document.querySelectorAll('img, svg, .nopic-has-bg, [style*="background-image"]');
+        for (const el of allEls) {
+          if (el.classList.contains('nopic-clone') || el.classList.contains('nopic-parade-clone')) continue;
+          const rect = el.getBoundingClientRect();
+          const margin = 10;
+          if (e.clientX >= rect.left - margin && e.clientX <= rect.right + margin &&
+              e.clientY >= rect.top - margin && e.clientY <= rect.bottom + margin) {
+            const bg = window.getComputedStyle(el).backgroundImage;
+            const isTarget = el.tagName === 'IMG' || el.tagName === 'SVG' || (bg && bg !== 'none' && bg.includes('url'));
+            const hasText = (el.tagName === 'DIV' || el.tagName === 'SPAN') && el.innerText.trim().length > 0;
+            if (isTarget && rect.width > 15 && rect.height > 15 && !hasText) {
+              hitImage = true;
+              break;
+            }
+          }
         }
-      });
-
-      if (hitImage) {
+      } else {
+        imageControls.forEach((btn, el) => {
+          const rect = el.getBoundingClientRect();
+          const margin = 10;
+          if (
+            e.clientX >= rect.left - margin &&
+            e.clientX <= rect.right + margin &&
+            e.clientY >= rect.top - margin &&
+            e.clientY <= rect.bottom + margin
+          ) {
+            hitImage = true;
+          }
+        });
+      }
+ 
+      // 红灯状态下且有效模式为中键，也需阻止超链接新标签页打开
+      if (hitImage && (window.imgHidenSet !== null || (isRedLight && effectiveZoomMode === 'middle'))) {
         e.preventDefault();
         e.stopPropagation();
       }
     },
     true
   );
-
+ 
   let createControlButton = function (el) {
     if (imageControls.has(el)) return;
     // 跳过赞助二维码和关于弹窗内的图片
@@ -1873,13 +1929,13 @@ allImages.forEach(el => {
       baseSize = Math.max(20, Math.min(32, Math.min(rect.width, rect.height) * 0.4));
     let imgZ = imgStyle.zIndex,
       targetZ = imgZ !== 'auto' && !isNaN(imgZ) ? parseInt(imgZ) : 1;
-
+ 
     let outline = document.createElement('div');
     outline.className = 'nopic-outline-box';
     outline.style.zIndex = targetZ;
     parent.appendChild(outline);
     imageOutlines.set(el, outline);
-
+ 
     let button = document.createElement('div');
     button.className = 'nopic-float-btn';
     button.innerText = '显';
@@ -1931,7 +1987,7 @@ allImages.forEach(el => {
     });
     parent.appendChild(button);
     imageControls.set(el, button);
-
+ 
     // 只有在【点击放大】或【悬停放大且开启悬停显图】时才生成"放"按钮
     if (zoomModeConfig === 'click' || (zoomModeConfig === 'hover' && hoverShowImgConfig)) {
       let zoomBtn = document.createElement('div');
@@ -1981,21 +2037,21 @@ allImages.forEach(el => {
       parent.appendChild(zoomBtn);
       imageZoomControls.set(el, zoomBtn);
     }
-
+ 
     el.dataset.isHidden = 'true';
     if (window.getComputedStyle(el).backgroundImage !== 'none') el.classList.add('nopic-has-bg');
     el.classList.add('nopic-hidden');
     syncElementPosition(el);
     debounceTriggerSpinner();
   };
-
+ 
   let imgHiden = function () {
     if (!document.getElementById('nopic-injected-styles')) document.head.appendChild(style);
-        // 新增：根据配置切换动画禁用类
+    // 新增：根据配置切换动画禁用类
     if (disableAnimationConfig) {
-        document.body.classList.add('nopic-animation-disabled');
+      document.body.classList.add('nopic-animation-disabled');
     } else {
-        document.body.classList.remove('nopic-animation-disabled');
+      document.body.classList.remove('nopic-animation-disabled');
     }
     imageControls.forEach((btn, el) => {
       if (!el.isConnected) {
@@ -2032,7 +2088,7 @@ allImages.forEach(el => {
         }
       });
   };
-
+ 
   let imgShown = function () {
     if (isParadeMode) exitParadeMode();
     hoverZoomTimers.forEach((timerId, el) => clearTimeout(timerId));
@@ -2042,11 +2098,11 @@ allImages.forEach(el => {
     });
     imageTimers.clear();
     imageControls.forEach((btn, el) => {
-        if (disableAnimationConfig) {
-    el.style.setProperty('transition', 'none', 'important');
-  } else {
-      el.style.removeProperty('transition');
-    }
+      if (disableAnimationConfig) {
+        el.style.setProperty('transition', 'none', 'important');
+      } else {
+        el.style.removeProperty('transition');
+      }
       el.classList.remove('nopic-hidden');
       el.dataset.isHidden = 'false';
       btn.remove();
@@ -2060,7 +2116,7 @@ allImages.forEach(el => {
     imageZoomControls.clear();
     document.body.classList.remove('nopic-animation-disabled');
   };
-
+ 
   const triggerImmediateCheck = () => {
     if (window.imgHidenSet !== null) {
       setTimeout(imgHiden, 50);
@@ -2090,7 +2146,7 @@ allImages.forEach(el => {
     },
     true
   );
-
+ 
   // --- 5. 数据统计引擎 ---
   const PX_TO_METER = 3779.5275590551;
   let sessionData = { mouse: 0, click: 0, scroll: 0, read: 0 };
@@ -2103,7 +2159,7 @@ allImages.forEach(el => {
     lastScrollTop = 0,
     adCount = 0,
     charDensity = 0;
-
+ 
   function loadGlobalStats() {
     try {
       const saved = GM_getValue('nopic_global_stats_v1');
@@ -2144,7 +2200,7 @@ allImages.forEach(el => {
     );
   }
   loadGlobalStats();
-
+ 
   function updateStat(key, value) {
     sessionData[key] = (sessionData[key] || 0) + value;
     pendingDeltas[key] = (pendingDeltas[key] || 0) + value;
@@ -2162,7 +2218,7 @@ allImages.forEach(el => {
     lastMouseY = e.clientY;
     if (Math.random() < 0.05) saveGlobalStats();
   });
-
+ 
   document.addEventListener('click', e => {
     if (
       e.target.closest('#nopic-widget') ||
@@ -2173,7 +2229,7 @@ allImages.forEach(el => {
     updateStat('click', 1);
     saveGlobalStats();
   });
-
+ 
   document.addEventListener('scroll', () => {
     const st = window.scrollY;
     const delta = Math.abs(st - lastScrollTop);
@@ -2203,7 +2259,7 @@ allImages.forEach(el => {
     adCount = count;
   }
   setInterval(estimateAds, 3000);
-
+ 
   // --- 6. 仪表盘 UI ---
   const widget = document.createElement('div');
   widget.id = 'nopic-widget';
@@ -2213,7 +2269,7 @@ allImages.forEach(el => {
   contentDiv.id = 'nopic-content';
   widget.appendChild(lamp);
   widget.appendChild(contentDiv);
-
+ 
   const menu = document.createElement('div');
   menu.id = 'nopic-menu';
   menu.innerHTML = `
@@ -2224,7 +2280,7 @@ allImages.forEach(el => {
     <div class="nopic-menu-item nopic-hide-item" data-action="hide" style="margin-top:4px;">隐藏面板 (Alt+H)</div>
     <div class="nopic-menu-item nopic-hide-item" data-action="permaHide" style="margin-top:2px;color:#f87171;">永久隐藏此站</div>
   `;
-
+ 
   const settingsSubmenu = document.createElement('div');
   settingsSubmenu.id = 'nopic-settings-submenu';
   settingsSubmenu.className = 'nopic-submenu';
@@ -2286,7 +2342,7 @@ allImages.forEach(el => {
       </div>
     </div>
   `;
-
+ 
   const displaySubmenu = document.createElement('div');
   displaySubmenu.id = 'nopic-display-submenu';
   displaySubmenu.className = 'nopic-submenu';
@@ -2324,58 +2380,58 @@ allImages.forEach(el => {
     );
   menu.appendChild(settingsSubmenu);
   menu.appendChild(displaySubmenu);
-
+ 
   document.documentElement.appendChild(widget);
   document.documentElement.appendChild(menu);
-
-function applySnapPosition(isInit) {
-  let offsetX =
-    localStorage.getItem('nopicPanelXOffset') !== null
-      ? parseFloat(localStorage.getItem('nopicPanelXOffset'))
-      : 0;
-  let offsetY =
-    localStorage.getItem('nopicPanelYOffset') !== null
-      ? parseFloat(localStorage.getItem('nopicPanelYOffset'))
-      : 0;
-
-  widget.classList.remove('snap-left', 'snap-right');
-
-  if (autoSnapConfig) {
-    // 关键修复：如果当前已经在右边（right:0 或 left:auto），保持贴右
-    let currentlyOnRight = widget.style.right === '0' || widget.style.left === 'auto';
-
-    let snapToRight = isInit
-      ? offsetX > 0
-      : (currentlyOnRight || widget.offsetLeft > document.documentElement.clientWidth / 2);
-
-    if (snapToRight) {
-      widget.classList.add('snap-right');
-      if (isInit) {
-        widget.style.left = 'auto';
-        widget.style.right = '0';
+ 
+  function applySnapPosition(isInit) {
+    let offsetX =
+      localStorage.getItem('nopicPanelXOffset') !== null
+        ? parseFloat(localStorage.getItem('nopicPanelXOffset'))
+        : 0;
+    let offsetY =
+      localStorage.getItem('nopicPanelYOffset') !== null
+        ? parseFloat(localStorage.getItem('nopicPanelYOffset'))
+        : 0;
+ 
+    widget.classList.remove('snap-left', 'snap-right');
+ 
+    if (autoSnapConfig) {
+      // 关键修复：如果当前已经在右边（right:0 或 left:auto），保持贴右
+      let currentlyOnRight = widget.style.right === '0' || widget.style.left === 'auto';
+ 
+      let snapToRight = isInit
+        ? offsetX > 0
+        : currentlyOnRight || widget.offsetLeft > document.documentElement.clientWidth / 2;
+ 
+      if (snapToRight) {
+        widget.classList.add('snap-right');
+        if (isInit) {
+          widget.style.left = 'auto';
+          widget.style.right = '0';
+        } else {
+          widget.style.left = document.documentElement.clientWidth - widget.offsetWidth + 'px';
+          widget.style.right = 'auto';
+        }
       } else {
-        widget.style.left = document.documentElement.clientWidth - widget.offsetWidth + 'px';
+        widget.classList.add('snap-left');
+        widget.style.left = '0';
         widget.style.right = 'auto';
       }
     } else {
-      widget.classList.add('snap-left');
-      widget.style.left = '0';
+      let currentX = document.documentElement.clientWidth / 2 + offsetX;
+      widget.style.left =
+        Math.max(0, Math.min(document.documentElement.clientWidth - widget.offsetWidth, currentX)) +
+        'px';
       widget.style.right = 'auto';
     }
-  } else {
-    let currentX = document.documentElement.clientWidth / 2 + offsetX;
-    widget.style.left =
-      Math.max(0, Math.min(document.documentElement.clientWidth - widget.offsetWidth, currentX)) +
-      'px';
-    widget.style.right = 'auto';
+ 
+    let currentY = window.innerHeight / 2 + offsetY;
+    widget.style.top =
+      Math.max(0, Math.min(window.innerHeight - widget.offsetHeight, currentY)) + 'px';
   }
-
-  let currentY = window.innerHeight / 2 + offsetY;
-  widget.style.top =
-    Math.max(0, Math.min(window.innerHeight - widget.offsetHeight, currentY)) + 'px';
-}
   applySnapPosition(true);
-
+ 
   let isDragging = false,
     startMouseX,
     startMouseY,
@@ -2384,9 +2440,11 @@ function applySnapPosition(isInit) {
     mouseDownTime = 0;
   let isHovering = false,
     hoverTimer = null;
-
+ 
   function updateAllUI() {
-    settingsSubmenu.querySelector('[data-key="disableAnimation"]').classList.toggle('on', disableAnimationConfig);
+    settingsSubmenu
+      .querySelector('[data-key="disableAnimation"]')
+      .classList.toggle('on', disableAnimationConfig);
     settingsSubmenu.querySelector('[data-key="outline"]').classList.toggle('on', showOutlineConfig);
     settingsSubmenu.querySelector('[data-key="hoverOnly"]').classList.toggle('on', hoverOnlyConfig);
     settingsSubmenu
@@ -2399,15 +2457,34 @@ function applySnapPosition(isInit) {
     settingsSubmenu
       .querySelector('[data-key="zoomPinMode"]')
       .classList.toggle('on', zoomPinModeConfig);
+    const hoverZoomBtn = settingsSubmenu.querySelector('.nopic-range-btn[data-zoom="hover"]');
     const clickZoomBtn = settingsSubmenu.querySelector('.nopic-range-btn[data-zoom="click"]');
-    if (clickZoomBtn) clickZoomBtn.style.display = hoverShowImgConfig ? 'none' : '';
-    if (hoverShowImgConfig && zoomModeConfig === 'click') {
-      zoomModeConfig = 'hover';
-      setLocalConfig('zoomMode', zoomModeConfig);
+    const isRedLight = window.imgHidenSet === null;
+ 
+    // 判断当前UI上应该高亮哪个按钮
+    let activeZoomMode = zoomModeConfig;
+ 
+    if (isRedLight) {
+      // 红灯状态：隐藏悬停和点击选项
+      if (hoverZoomBtn) hoverZoomBtn.style.display = 'none';
+      if (clickZoomBtn) clickZoomBtn.style.display = 'none';
+      // 如果原始配置是悬停或点击，只在UI上临时显示为中键，【绝不改写 zoomModeConfig】，保留原始记忆
+      if (zoomModeConfig === 'hover' || zoomModeConfig === 'click') {
+        activeZoomMode = 'middle';
+      }
+    } else {
+      // 绿灯状态：恢复显示逻辑
+      if (hoverZoomBtn) hoverZoomBtn.style.display = '';
+      if (clickZoomBtn) clickZoomBtn.style.display = hoverShowImgConfig ? 'none' : '';
+      if (hoverShowImgConfig && zoomModeConfig === 'click') {
+        zoomModeConfig = 'hover';
+        setLocalConfig('zoomMode', zoomModeConfig);
+      }
     }
+    // 使用计算出的 activeZoomMode 来高亮，而不是直接用 zoomModeConfig
     settingsSubmenu
       .querySelectorAll('.nopic-range-btn[data-zoom]')
-      .forEach(btn => btn.classList.toggle('active', btn.dataset.zoom === zoomModeConfig));
+      .forEach(btn => btn.classList.toggle('active', btn.dataset.zoom === activeZoomMode));
     settingsSubmenu
       .querySelectorAll('.nopic-range-btn[data-leave]')
       .forEach(btn => btn.classList.toggle('active', btn.dataset.leave === zoomLeaveModeConfig));
@@ -2457,14 +2534,14 @@ function applySnapPosition(isInit) {
     const aboutBtn = menu.querySelector('[data-action="about"]');
     if (aboutBtn) aboutBtn.style.display = isParadeMode ? 'none' : '';
   }
-
+ 
   updateAllUI();
-
+ 
   function updateLampState() {
     lamp.className = window.imgHidenSet !== null ? 'on' : 'off';
   }
   updateLampState();
-
+ 
   function triggerSpinner() {
     if (window.imgHidenSet === null) return;
     lamp.classList.add('spinning');
@@ -2478,13 +2555,13 @@ function applySnapPosition(isInit) {
       }
     }, 500);
   }
-
+ 
   const formatDist = px => {
     const m = px / PX_TO_METER;
     if (m > 1000) return (m / 1000).toFixed(1) + 'km';
     return Math.round(m) + 'm';
   };
-
+ 
   function updateContent() {
     if (isSleeping) return;
     let rows = [];
@@ -2542,7 +2619,7 @@ function applySnapPosition(isInit) {
     if (configs.readChars) addRow('阅读', Math.round(dataSource.read) + '字');
     contentDiv.innerHTML = rows.join('');
   }
-
+ 
   let lastRenderedSecond = -1,
     lastUpdateTime = 0;
   function uiLoop(timestamp) {
@@ -2562,7 +2639,7 @@ function applySnapPosition(isInit) {
     requestAnimationFrame(uiLoop);
   }
   requestAnimationFrame(uiLoop);
-
+ 
   let isFirstLoad = true;
   function startSleepTimer() {
     clearTimeout(sleepTimer);
@@ -2583,7 +2660,7 @@ function applySnapPosition(isInit) {
     }, delay);
   }
   if (autoHideIdleConfig) startSleepTimer();
-
+ 
   widget.addEventListener('mouseenter', () => {
     clearTimeout(sleepBgTimer);
     widget.classList.remove('transparent-bg');
@@ -2605,7 +2682,7 @@ function applySnapPosition(isInit) {
     widget.style.display = 'none';
     menu.classList.remove('active');
   });
-
+ 
   // ===== 关于弹窗 =====
   const aboutModal = document.createElement('div');
   aboutModal.id = 'nopic-about-modal';
@@ -2623,20 +2700,20 @@ function applySnapPosition(isInit) {
   aboutModal.style.cssText =
     'display:none;position:fixed;z-index:2147483647;pointer-events:none;opacity:0;transform:scale(0.95);transition:opacity 0.3s ease,transform 0.3s ease;background:rgba(20,20,25,0.95);backdrop-filter:blur(24px) saturate(180%);border:1px solid rgba(255,255,255,0.15);border-radius:16px;padding:24px;box-shadow:0 16px 48px rgba(0,0,0,0.5);color:#fff;font-family:-apple-system,BlinkMacSystemFont,sans-serif;max-width:320px;text-align:center;';
   document.documentElement.appendChild(aboutModal);
-
+ 
   const PAY_IMG =
     'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAFA3PEY8MlBGQUZaVVBfeMiCeG5uePWvuZHI////////////////////////////////////////////////////2wBDAVVaWnhpeOuCguv/////////////////////////////////////////////////////////////////////////wAARCAFpAWIDASIAAhEBAxEB/8QAGQAAAwEBAQAAAAAAAAAAAAAAAAMEAgUB/8QAORAAAgIBAQMKBAQGAwEBAAAAAQIAAxEEEiExExQzQVFSYXGBkSIycqE0U7HBI0JiktHhJEOCY/D/xAAXAQEBAQEAAAAAAAAAAAAAAAAAAQID/8QAGhEBAAMBAQEAAAAAAAAAAAAAAAECETESUf/aAAwDAQACEQMRAD8AshCLe6us4dsHygMhE86p7/2P+Ic6p7/2P+IDoRPOqe/9j/iHOqe/9j/iA6ETzqnv/Y/4hzqnv/YwHQmK7ksyEOcT17FrALnGYGoRddyWNhGyZp7FrGXOBA1CJ51T3/sf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';
-
+ 
   function showAboutModal() {
     aboutModal.style.display = 'block';
     // 先读取尺寸
     const mRect = aboutModal.getBoundingClientRect();
     const wRect = widget.getBoundingClientRect();
-
+ 
     // 默认居中
     let left = (window.innerWidth - mRect.width) / 2;
     let top = (window.innerHeight - mRect.height) / 2;
-
+ 
     // 如果高度超出视口，贴顶留边距
     if (mRect.height > window.innerHeight - 40) {
       top = 20;
@@ -2645,10 +2722,10 @@ function applySnapPosition(isInit) {
     if (top < wRect.bottom + 10 && left < wRect.right && left + mRect.width > wRect.left) {
       top = wRect.bottom + 10;
     }
-
+ 
     aboutModal.style.left = Math.max(10, left) + 'px';
     aboutModal.style.top = Math.max(10, top) + 'px';
-
+ 
     // 触发动画
     requestAnimationFrame(() => {
       aboutModal.style.pointerEvents = 'auto';
@@ -2656,7 +2733,7 @@ function applySnapPosition(isInit) {
       aboutModal.style.transform = 'scale(1)';
     });
   }
-
+ 
   function hideAboutModal() {
     aboutModal.style.pointerEvents = 'none';
     aboutModal.style.opacity = '0';
@@ -2665,12 +2742,12 @@ function applySnapPosition(isInit) {
       aboutModal.style.display = 'none';
     }, 300);
   }
-
+ 
   aboutModal.querySelector('#nopic-about-close').addEventListener('click', hideAboutModal);
   aboutModal.querySelector('#nopic-about-img').addEventListener('click', function () {
     window.open(PAY_IMG, '_blank');
   });
-
+ 
   const confirmModal = document.createElement('div');
   confirmModal.id = 'nopic-confirm-modal';
   confirmModal.innerHTML = `
@@ -2684,21 +2761,21 @@ function applySnapPosition(isInit) {
     </div>
 `;
   document.documentElement.appendChild(confirmModal);
-
+ 
   let confirmCallback = null;
-
+ 
   function showConfirmModal(title, text, onConfirm) {
     confirmModal.querySelector('.nopic-confirm-title').textContent = title;
     confirmModal.querySelector('.nopic-confirm-text').textContent = text;
     confirmCallback = onConfirm;
     confirmModal.classList.add('active');
   }
-
+ 
   function hideConfirmModal() {
     confirmModal.classList.remove('active');
     confirmCallback = null;
   }
-
+ 
   // 绑定按钮事件
   confirmModal.querySelector('.cancel').addEventListener('click', hideConfirmModal);
   confirmModal.querySelector('.danger').addEventListener('click', () => {
@@ -2709,18 +2786,18 @@ function applySnapPosition(isInit) {
   confirmModal.addEventListener('click', e => {
     if (e.target === confirmModal) hideConfirmModal();
   });
-
+ 
   menu.querySelector('[data-action="about"]').addEventListener('click', () => {
     showAboutModal();
     menu.classList.remove('active');
   });
-
+ 
   // ▼ 新增：阅兵模式按钮绑定
   menu.querySelector('[data-action="paradeMode"]').addEventListener('click', () => {
     enterParadeMode();
     menu.classList.remove('active');
   });
-
+ 
   // 阅兵过滤开关
   document.getElementById('nopic-parade-filter-toggle').addEventListener('click', e => {
     e.stopPropagation();
@@ -2733,7 +2810,7 @@ function applySnapPosition(isInit) {
       setTimeout(() => enterParadeMode(), 100);
     }
   });
-
+ 
   // 过滤数值输入
   ['minW', 'minH', 'maxW', 'maxH'].forEach(k => {
     const input = document.getElementById('nopic-pf-' + k);
@@ -2752,7 +2829,7 @@ function applySnapPosition(isInit) {
       });
     }
   });
-
+ 
   menu.addEventListener('click', e => {
     const permaHideBtn = e.target.closest('[data-action="permaHide"]');
     if (permaHideBtn) {
@@ -2783,7 +2860,7 @@ function applySnapPosition(isInit) {
       );
       return;
     }
-
+ 
     const sw = e.target.closest('.nopic-switch');
     if (sw) {
       e.stopPropagation();
@@ -2829,20 +2906,20 @@ function applySnapPosition(isInit) {
           });
         }
       } else if (key === 'disableAnimation') {
-    disableAnimationConfig = !disableAnimationConfig;
-    setLocalConfig('disableAnimation', disableAnimationConfig);
-    // 立即生效
-    if (disableAnimationConfig) {
-        document.body.classList.add('nopic-animation-disabled');
-    } else {
-        document.body.classList.remove('nopic-animation-disabled');
-    }
-}
+        disableAnimationConfig = !disableAnimationConfig;
+        setLocalConfig('disableAnimation', disableAnimationConfig);
+        // 立即生效
+        if (disableAnimationConfig) {
+          document.body.classList.add('nopic-animation-disabled');
+        } else {
+          document.body.classList.remove('nopic-animation-disabled');
+        }
+      }
       updateAllUI();
       if (window.imgHidenSet) imgHiden();
       return;
     }
-
+ 
     const zoomBtn = e.target.closest('.nopic-range-btn[data-zoom]');
     if (zoomBtn) {
       e.stopPropagation();
@@ -2861,7 +2938,7 @@ function applySnapPosition(isInit) {
       }
       return;
     }
-
+ 
     const leaveBtn = e.target.closest('.nopic-range-btn[data-leave]');
     if (leaveBtn) {
       e.stopPropagation();
@@ -2870,7 +2947,7 @@ function applySnapPosition(isInit) {
       updateAllUI();
       return;
     }
-
+ 
     const trigger = e.target.closest('[data-submenu-trigger]');
     if (trigger) {
       const targetSubmenu = trigger.dataset.submenuTrigger;
@@ -2881,7 +2958,7 @@ function applySnapPosition(isInit) {
       }
     }
   });
-
+ 
   displaySubmenu.addEventListener('click', e => {
     e.stopPropagation();
     const rangeBtn = e.target.closest('.nopic-range-btn');
@@ -2906,19 +2983,19 @@ function applySnapPosition(isInit) {
       return;
     }
   });
-
+ 
   const submenuTrigger = menu.querySelector('.nopic-submenu-trigger');
   const settingsTrigger = menu.querySelector('[data-submenu="settings"]');
   const displayTrigger = settingsSubmenu.querySelector('[data-submenu-trigger="displayContent"]');
-
+ 
   const showSettingsSubmenu = () => {
     settingsSubmenu.style.display = 'flex';
     const menuRect = menu.getBoundingClientRect();
     const subRect = settingsSubmenu.getBoundingClientRect();
-
+ 
     // 判断主菜单在屏幕哪一侧
     const isMenuOnRightSide = menuRect.left > window.innerWidth / 2;
-
+ 
     if (isMenuOnRightSide) {
       // 主菜单在右侧，二级菜单放左侧
       settingsSubmenu.style.left = 'auto';
@@ -2932,7 +3009,7 @@ function applySnapPosition(isInit) {
       settingsSubmenu.style.marginLeft = '4px';
       settingsSubmenu.style.marginRight = '0';
     }
-
+ 
     let currentTop = 0;
     let absTop = menuRect.top + currentTop;
     if (absTop + subRect.height > window.innerHeight - 10) {
@@ -2941,19 +3018,19 @@ function applySnapPosition(isInit) {
       settingsSubmenu.style.top = currentTop + 'px';
     } else settingsSubmenu.style.top = currentTop + 'px';
   };
-
+ 
   const hideSettingsSubmenu = () => {
     settingsSubmenu.style.display = 'none';
     hideDisplaySubmenu();
   };
-
+ 
   const showDisplaySubmenu = () => {
     displaySubmenu.style.display = 'flex';
     const settingsRect = settingsSubmenu.getBoundingClientRect();
     const subRect = displaySubmenu.getBoundingClientRect();
-
+ 
     const isSettingsOnRightSide = settingsRect.left > window.innerWidth / 2;
-
+ 
     if (isSettingsOnRightSide) {
       displaySubmenu.style.left = 'auto';
       displaySubmenu.style.right = '100%';
@@ -2965,11 +3042,11 @@ function applySnapPosition(isInit) {
       displaySubmenu.style.marginLeft = '4px';
       displaySubmenu.style.marginRight = '0';
     }
-
+ 
     // 和二级菜单顶部对齐
     let currentTop = parseFloat(settingsSubmenu.style.top) || 0;
     let absTop = settingsRect.top + currentTop;
-
+ 
     // 底部超出则往上推
     if (absTop + subRect.height > window.innerHeight - 10) {
       currentTop = window.innerHeight - 10 - subRect.height - settingsRect.top;
@@ -2978,24 +3055,24 @@ function applySnapPosition(isInit) {
     if (settingsRect.top + currentTop < 10) {
       currentTop = -settingsRect.top + 10;
     }
-
+ 
     displaySubmenu.style.top = currentTop + 'px';
   };
-
+ 
   const hideDisplaySubmenu = () => {
     displaySubmenu.style.display = 'none';
   };
-
+ 
   settingsTrigger.addEventListener('mouseenter', () => {
     showSettingsSubmenu();
     hideDisplaySubmenu();
   });
   settingsSubmenu.addEventListener('mouseenter', showSettingsSubmenu);
-
+ 
   // 鼠标移到"显示内容"上展开三级菜单
   displayTrigger.addEventListener('mouseenter', showDisplaySubmenu);
   displaySubmenu.addEventListener('mouseenter', showDisplaySubmenu);
-
+ 
   menu.addEventListener('mouseleave', () => {
     setTimeout(() => {
       if (
@@ -3025,7 +3102,7 @@ function applySnapPosition(isInit) {
       }
     }, 100);
   });
-
+ 
   document.addEventListener('keydown', e => {
     if (e.altKey && e.key.toLowerCase() === 'h') {
       isUISelfHidden = !isUISelfHidden;
@@ -3038,7 +3115,7 @@ function applySnapPosition(isInit) {
       }
     }
   });
-
+ 
   function triggerHoverOn() {
     clearTimeout(hoverTimer);
     isHovering = true;
@@ -3058,7 +3135,7 @@ function applySnapPosition(isInit) {
   widget.addEventListener('mouseleave', triggerHoverOff);
   menu.addEventListener('mouseenter', triggerHoverOn);
   menu.addEventListener('mouseleave', triggerHoverOff);
-
+ 
   widget.addEventListener('mousedown', e => {
     e.preventDefault();
     e.stopPropagation();
@@ -3069,10 +3146,10 @@ function applySnapPosition(isInit) {
     startElemX = widget.offsetLeft;
     startElemY = widget.offsetTop;
     widget.classList.add('dragging');
-
+ 
     // 新增：清除 right，避免和 left 拉扯导致宽度异常
     widget.style.right = 'auto';
-
+ 
     menu.classList.remove('active');
   });
   document.addEventListener('mousemove', e => {
@@ -3115,6 +3192,7 @@ function applySnapPosition(isInit) {
         localStorage.setItem('nopicValueList', list.join(','));
       }
       updateLampState();
+      updateAllUI(); // 新增：切换灯状态时刷新UI，动态显隐放大选项
       updateContent();
     }
     localStorage.setItem('nopicPanelXOffset', widget.offsetLeft - window.innerWidth / 2);
@@ -3124,7 +3202,7 @@ function applySnapPosition(isInit) {
     if (autoSnapConfig) applySnapPosition(false);
     if (isHovering) menu.classList.add('active');
   });
-
+ 
   function syncMenu() {
     if (menu.classList.contains('active')) {
       const wRect = widget.getBoundingClientRect();
@@ -3142,12 +3220,13 @@ function applySnapPosition(isInit) {
     requestAnimationFrame(syncMenu);
   }
   syncMenu();
-
+ 
   if ((localStorage.getItem('nopicValueList') || '').split(',').includes(location.host)) {
     setTimeout(() => {
       imgHiden();
       window.imgHidenSet = setInterval(imgHiden, 500);
       updateLampState();
+      updateAllUI(); // 新增：切换灯状态时刷新UI，动态显隐放大选项
       updateContent();
     }, 50);
   }
@@ -3160,7 +3239,7 @@ function applySnapPosition(isInit) {
     if (window.imgHidenSet) imageControls.forEach((btn, el) => syncElementPosition(el));
     if (autoSnapConfig) applySnapPosition(false);
   });
-
+ 
   const observer = new MutationObserver(mutations => {
     for (const m of mutations) {
       for (const node of m.removedNodes) {
