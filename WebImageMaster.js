@@ -3225,14 +3225,14 @@ https://microsoftedge.microsoft.com/addons/detail/mmgfooecliddbadakcegfmjigjagll
 
     <!-- ===== 方式二通用说明 ===== -->
     <div class="about-guide">
-      <div class="about-guide-title">方式二 · 自行加载拓展（适用所有浏览器）</div>
+      <div class="about-guide-title">方式二 · 自行加载拓展（适用大部分浏览器）</div>
       <div class="about-guide-steps">
         <span>① 进入浏览器「管理拓展」页面</span>
         <span>② 打开右上角「开发者模式」开关</span>
         <span>③ 点击「加载解压缩的拓展」</span>
         <span>④ 选择刚才下载并解压的文件夹</span>
       </div>
-      <div class="about-guide-note">适用于 Chrome / Edge / 360 等所有 Chromium 内核浏览器</div>
+      <div class="about-guide-note">建议升级为网页控制大师的扩展程序版（方式一或方式二），性能有大量优化</div>
     </div>
   </div>
 
